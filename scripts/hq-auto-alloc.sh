@@ -26,11 +26,12 @@ until hq job list &>/dev/null ; do sleep 1 ; done
     hq alloc add slurm \
         --time-limit 10m \
         --workers-per-alloc 1 \
-        --cpus 2x20 \
+        --cpus 20 \
         --backlog 1 \
         --max-worker-count 1 \
         -- \
-        --cpus-per-task 40 \
+        --cpus-per-task 20 \
+        --mem-per-cpu 1500 \
         --gres nvme:1 \
         --partition small &
 )
