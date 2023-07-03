@@ -1,4 +1,5 @@
 bin/
 hq-server/
 output/
-steps/
+*.out
+sdf.tar.gz

@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH --partition=small
-#SBATCH --account=project_2001659
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=40
@@ -25,20 +24,23 @@ until hq job list &>/dev/null ; do sleep 1 ; done
 srun --exact --cpu-bind=none --mpi=none hq worker start --cpus="${SLURM_CPUS_PER_TASK}" &
 hq worker wait "${SLURM_NTASKS}"
 
-# Extract the input files to the local disk and cd there
-hq submit --stdout=none --stderr=none --cpus=all bash ./task/extract.sh &
-hq job wait all
+# Extract the input files to the local disk
+tar -xf ./data/smiles.tar.gz -C "$LOCAL_SCRATCH"
+
+# Change directory to the local disk
+cd "$LOCAL_SCRATCH/smiles" || exit 1
 
 # Submit each Open Babel conversion as a separate HyperQueue job
-FILES=$(tar -tf smiles.tar.gz | grep "\.smi")
-for FILE in $FILES ; do
-    hq submit --stdout=none --stderr=none --cpus=1 bash ./task/gen3d.sh "$FILE" &
+for f in *.smi ; do
+    hq submit --stdout=none --stderr=none obabel "$f" -O "${f%.*}.sdf" --gen3d best &
 done
+
+# Wait until all jobs have finished
 hq job wait all
 
 # Compress the output .sdf files and copy the package back to /scratch
-hq submit --stdout=none --stderr=none --cpus=all bash ./task/archive-copy.sh "$SLURM_SUBMIT_DIR" &
-hq job wait all
+tar -czf sdf.tar.gz -- *.sdf
+cp sdf.tar.gz "$SLURM_SUBMIT_DIR"
 
 # Shut down the HyperQueue workers and server
 hq worker stop all

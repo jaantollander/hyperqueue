@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH --partition=interactive
-#SBATCH --account=project_2001659
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
@@ -31,25 +30,24 @@ until hq job list &>/dev/null ; do sleep 1 ; done
         --backlog 1 \
         --max-worker-count 1 \
         -- \
-        --account project_2001659 \
         --cpus-per-task 40 \
         --gres nvme:1 \
         --partition small &
 )
 
 # Extract the input files to the local disk and cd there
-hq submit --stdout=none --stderr=none --cpus=all bash ./task/extract.sh &
+hq submit --stdout=none --stderr=none --cpus=all bash ./scripts/task/extract.sh &
 hq job wait all
 
 # Submit each Open Babel conversion as a separate HyperQueue job
-FILES=$(tar -tf smiles.tar.gz | grep "\.smi")
+FILES=$(tar -tf ./data/smiles.tar.gz | grep "\.smi")
 for FILE in $FILES ; do
-    hq submit --stdout=none --stderr=none --cpus=1 bash ./task/gen3d.sh "$FILE" &
+    hq submit --stdout=none --stderr=none --cpus=1 bash ./scripts/task/gen3d.sh "$FILE" &
 done
 hq job wait all
 
 # Compress the output .sdf files and copy the package back to /scratch
-hq submit --stdout=none --stderr=none --cpus=all bash ./task/archive-copy.sh "$SLURM_SUBMIT_DIR" &
+hq submit --stdout=none --stderr=none --cpus=all bash ./scripts/task/archive-copy.sh "$SLURM_SUBMIT_DIR" &
 hq job wait all
 
 # Shut down the HyperQueue workers and server
