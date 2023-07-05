@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 cd "$LOCAL_SCRATCH"
-tar -czf sdf.tar.gz -- ./smiles/*.sdf
-cp sdf.tar.gz "$1"
+FILENAME=$SLURMD_NODENAME.sdf.tar.gz
+tar -czf "$FILENAME" -- ./smiles/*.sdf
+cp "$FILENAME" "$1"

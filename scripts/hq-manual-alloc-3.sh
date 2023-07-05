@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --partition=small
-#SBATCH --nodes=1
+#SBATCH --partition=large
+#SBATCH --nodes=2
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=20
-#SBATCH --mem-per-cpu=1500
+#SBATCH --mem-per-cpu=1000
 #SBATCH --time=00:15:00
 #SBATCH --gres=nvme:1
 
@@ -22,11 +22,18 @@ hq server start &
 until hq job list &>/dev/null ; do sleep 1 ; done
 
 # Start the workers (one per node, in the background) and wait until they have started
-srun --exact --cpu-bind=none --mpi=none hq worker start --cpus="${SLURM_CPUS_PER_TASK}" &
+(
+    srun --overlap --cpu-bind=none --mpi=none hq worker start \
+        --manager slurm \
+        --idle-timeout 5m \
+        --on-server-lost finish-running \
+        --cpus="${SLURM_CPUS_PER_TASK}" \
+        --resource "mem=sum($((SLURM_CPUS_PER_TASK * SLURM_MEM_PER_CPU * 1000000)))" &
+)
 hq worker wait "${SLURM_NTASKS}"
 
-# Extract the input files to the local disk and cd there
-bash ./scripts/task/extract.sh
+# Extract the input files to the local disk
+srun bash ./scripts/task/extract.sh
 
 # Submit each Open Babel conversion as a separate HyperQueue job
 FILES=$(tar -tf ./data/smiles.tar.gz | grep "\.smi")
@@ -36,7 +43,7 @@ done
 hq job wait all
 
 # Compress the output .sdf files and copy the package back to /scratch
-bash ./scripts/task/archive-copy.sh "$SLURM_SUBMIT_DIR"
+srun bash ./scripts/task/archive-copy.sh "$SLURM_SUBMIT_DIR"
 
 # Shut down the HyperQueue workers and server
 hq worker stop all
