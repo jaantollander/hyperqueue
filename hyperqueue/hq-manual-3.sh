@@ -33,17 +33,17 @@ until hq job list &>/dev/null ; do sleep 1 ; done
 hq worker wait "${SLURM_NTASKS}"
 
 # Extract the input files to the local disk
-srun bash ./scripts/task/extract.sh
+srun bash ./hyperqueue/task/extract.sh
 
 # Submit each Open Babel conversion as a separate HyperQueue job
 FILES=$(tar -tf ./data/smiles.tar.gz | grep "\.smi")
 for FILE in $FILES ; do
-    hq submit --stdout=none --stderr=none --cpus=1 bash ./scripts/task/gen3d.sh "$FILE" &
+    hq submit --stdout=none --stderr=none --cpus=1 bash ./hyperqueue/task/gen3d.sh "$FILE" &
 done
 hq job wait all
 
 # Compress the output .sdf files and copy the package back to /scratch
-srun bash ./scripts/task/archive-copy.sh "$SLURM_SUBMIT_DIR"
+srun bash ./hyperqueue/task/archive-copy.sh "$SLURM_SUBMIT_DIR"
 
 # Shut down the HyperQueue workers and server
 hq worker stop all
