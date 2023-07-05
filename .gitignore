@@ -2,4 +2,4 @@ bin/
 hq-server/
 output/
 *.out
-sdf.tar.gz
+*sdf.tar.gz

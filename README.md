@@ -1,8 +1,9 @@
-Hyperqueue examples
+# Workflows
+## Hyperqueue
 
 ```bash
 export SBATCH_ACCOUNT=project_<id>
-sbatch ./scripts/hq-<name>.sh
+sbatch ./hyperqueue/hq-<name>.sh
 ```
 
 - https://docs.csc.fi/apps/hyperqueue/
