@@ -8,16 +8,17 @@ wget https://github.com/It4innovations/hyperqueue/releases/download/v0.15.0/hq-v
 tar xf hq-v0.15.0-linux-x64.tar.gz --directory=appl/hyperqueue/0.15.0
 ```
 
+Use local modulefiles
+
 ```bash
 module use "$PWD/modulefiles"
-module load hyperqueue/0.15.0
 ```
 
 Running scripts
 
 ```bash
 export SBATCH_ACCOUNT=project_<id>
-sbatch ./hyperqueue/hq-<name>.sh
+sbatch ./hyperqueue/<name>.sh
 ```
 
 Resources
