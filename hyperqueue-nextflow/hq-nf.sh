@@ -7,8 +7,7 @@
 #SBATCH --time=00:10:00
 
 # Load the required modules
-module load hyperqueue
-module load nextflow
+module load hyperqueue nextflow
 
 # Create a per job directory
 WORKDIR=$PWD/work-$SLURM_JOB_ID
@@ -28,7 +27,7 @@ hq worker wait "${SLURM_NTASKS}"
 
 # Make sure nextflow uses the right executor and
 # knows how much it can submit.
-# TODO: provide as arguments to `nextflow`
+# TODO: provide as arguments to `nextflow`?
 echo "executor {
   queueSize = $(( SLURM_CPUS_PER_TASK * SLURM_NTASKS ))
   name = 'hq'
@@ -36,7 +35,7 @@ echo "executor {
 }" > "$WORKDIR/nextflow.config"
 
 cp main.nf "$WORKDIR"
-cd "$WORKDIR"
+cd "$WORKDIR" || exit 1
 nextflow run main.nf
 
 # Make sure we exit cleanly once nextflow is done

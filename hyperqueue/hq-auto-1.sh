@@ -6,11 +6,7 @@
 #SBATCH --mem-per-cpu=2000
 #SBATCH --time=00:15:00
 
-#module load hyperqueue openbabel
-module load openbabel
-
-# Use local hyperqueue
-export PATH="$PWD/bin:$PATH"
+module load hyperqueue openbabel
 
 # Specify a location for the HyperQueue server
 export HQ_SERVER_DIR=${PWD}/hq-server/${SLURM_JOB_ID}
