@@ -7,8 +7,7 @@ process splitLetters {
     path 'chunk_*'
 
   """
-  printf '${params.str}' > params
-  cat params | split -b 6 - chunk_
+  printf '${params.str}' | split -b 6 - chunk_
   """
 }
 

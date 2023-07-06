@@ -2,7 +2,7 @@ appl/
 hq-server/
 output/
 work/
-.nextflow
+.nextflow*
 *.log
 *.out
 *sdf.tar.gz
