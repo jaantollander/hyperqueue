@@ -1,4 +1,6 @@
 # Workflows
+Repository for testing various workflow tools and combinations on HPC clusters.
+
 ## Hyperqueue
 Installation
 
