@@ -10,8 +10,8 @@
 module load hyperqueue
 
 # Specify a location for the HyperQueue server
-export HQ_SERVER_DIR=${PWD}/hq-server/${SLURM_JOB_ID}
-mkdir -p "${HQ_SERVER_DIR}"
+export HQ_SERVER_DIR=$PWD/hq-server/$SLURM_JOB_ID
+mkdir -p "$HQ_SERVER_DIR"
 
 # Start the server in the background (&) and wait until it has started
 hq server start &

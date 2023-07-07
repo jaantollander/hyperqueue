@@ -1,5 +1,6 @@
 appl/
 hq-server/
+.hq-server/
 output/
 work/
 .nextflow*
