@@ -6,6 +6,7 @@
 #SBATCH --mem-per-cpu=2000
 #SBATCH --time=00:15:00
 
+# Load dependencies
 module load hyperqueue
 
 # Specify a location for the HyperQueue server
@@ -33,7 +34,7 @@ until hq job list &>/dev/null ; do sleep 1 ; done
 
 # Submit jobs
 for _ in {1..1000} ; do
-    hq submit --stdout=none --stderr=none --cpus=1 ./hyperqueue/task/sleep.sh
+    hq submit --stdout=none --stderr=none --cpus=1 ./hyperqueue/simple/task/work.sh &
 done
 hq job wait all
 

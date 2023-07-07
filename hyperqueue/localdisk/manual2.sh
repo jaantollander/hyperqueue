@@ -2,14 +2,16 @@
 #SBATCH --partition=small
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=40
-#SBATCH --time=00:10:00
+#SBATCH --cpus-per-task=20
+#SBATCH --mem-per-cpu=1500
+#SBATCH --time=00:15:00
 #SBATCH --gres=nvme:1
 
+# Load dependencies
 module load hyperqueue openbabel
 
 # Specify a location for the HyperQueue server
-export HQ_SERVER_DIR=${PWD}/hq-server/${SLURM_JOB_ID}
+export HQ_SERVER_DIR=${PWD}/.hq-server/${SLURM_JOB_ID}
 mkdir -p "${HQ_SERVER_DIR}"
 
 # Start the server in the background (&) and wait until it has started
@@ -20,23 +22,18 @@ until hq job list &>/dev/null ; do sleep 1 ; done
 srun --exact --cpu-bind=none --mpi=none hq worker start --cpus="${SLURM_CPUS_PER_TASK}" &
 hq worker wait "${SLURM_NTASKS}"
 
-# Extract the input files to the local disk
-tar -xf ./data/smiles.tar.gz -C "$LOCAL_SCRATCH"
-
-# Change directory to the local disk
-cd "$LOCAL_SCRATCH/smiles" || exit 1
+# Extract the input files to the local disk and cd there
+./hyperqueue/localdisk/task/extract.sh
 
 # Submit each Open Babel conversion as a separate HyperQueue job
-for f in *.smi ; do
-    hq submit --stdout=none --stderr=none obabel "$f" -O "${f%.*}.sdf" --gen3d best &
+FILES=$(tar -tf ./data/smiles.tar.gz | grep "\.smi")
+for FILE in $FILES ; do
+    hq submit --stdout=none --stderr=none --cpus=1 ./hyperqueue/localdisk/task/gen3d.sh "$FILE" &
 done
-
-# Wait until all jobs have finished
 hq job wait all
 
 # Compress the output .sdf files and copy the package back to /scratch
-tar -czf sdf.tar.gz -- *.sdf
-cp sdf.tar.gz "$SLURM_SUBMIT_DIR"
+./hyperqueue/localdisk/task/archive-copy.sh "$SLURM_SUBMIT_DIR"
 
 # Shut down the HyperQueue workers and server
 hq worker stop all
