@@ -32,8 +32,8 @@ until hq job list &>/dev/null ; do sleep 1 ; done
 )
 
 # Submit jobs
-for i in {1..1000} ; do
-    hq submit --stdout=none --stderr=none --cpus=1 bash -c "echo $i; sleep 1"
+for _ in {1..1000} ; do
+    hq submit --stdout=none --stderr=none --cpus=1 ./hyperqueue/task/sleep.sh
 done
 hq job wait all
 
