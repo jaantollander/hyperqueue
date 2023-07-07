@@ -16,7 +16,7 @@ mkdir -p "${HQ_SERVER_DIR}"
 hq server start &
 until hq job list &>/dev/null ; do sleep 1 ; done
 
-# Start the workers (one per node, in the background) and wait until they have started
+# Start the workers in the background
 (
     unset -v $(printenv | grep --only-matching '^SLURM_[[:upper:]_]*') &&
     hq alloc add slurm \
