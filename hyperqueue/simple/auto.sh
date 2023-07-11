@@ -34,7 +34,7 @@ until hq job list &>/dev/null ; do sleep 1 ; done
 
 # Submit jobs
 for _ in {1..1000} ; do
-    hq submit --stdout=none --stderr=none --cpus=1 ./hyperqueue/simple/task/work.sh &
+    hq submit --stdout=none --stderr=none --cpus=1 ./task &
 done
 hq job wait all
 
