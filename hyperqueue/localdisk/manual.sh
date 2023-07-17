@@ -29,15 +29,16 @@ hq worker wait "$SLURM_NTASKS"
 
 srun -m arbitrary -w "$SLURM_JOB_NODELIST" ./task/extract.sh
 
-# TODO: try --each-line <(echo "$FILES"), HQ_ENTRY
 FILES=$(tar -tf ./data/smiles.tar.gz | grep "\.smi")
+
 #for FILE in $FILES ; do
 #    hq submit --stdout=none --stderr=none --cpus=1 ./task/gen3d.sh "$FILE"
 #done
+
 hq submit --stdout=none --stderr=none --cpus=1 --each-line <(echo "$FILES") ./task/gen3d.sh
 hq job wait all
 
-srun -m arbitrary -w "$SLURM_JOB_NODELIST" ./task/archive.sh "$SLURM_SUBMIT_DIR"
+srun -m arbitrary -w "$SLURM_JOB_NODELIST" ./task/archive.sh
 
 hq worker stop all
 hq server stop

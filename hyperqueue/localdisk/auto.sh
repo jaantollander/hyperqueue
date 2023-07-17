@@ -18,36 +18,30 @@ mkdir -p "${HQ_SERVER_DIR}"
 hq server start &
 until hq job list &>/dev/null ; do sleep 1 ; done
 
-# TODO: add start and stop scripts for extract and archive
 # Start the workers in the background
 (
     unset -v $(printenv | grep --only-matching '^SLURM_[[:upper:]_]*') &&
     hq alloc add slurm \
         --time-limit 10m \
-        --workers-per-alloc 1 \
+        --workers-per-alloc 2 \
         --cpus 20 \
         --backlog 1 \
         --max-worker-count 1 \
+        --worker-start-cmd "srun ./task/extract.sh" \
+        --worker-stop-cmd "srun ./task/archive.sh" \
         -- \
         --cpus-per-task 20 \
         --mem-per-cpu 1500 \
         --gres nvme:1 \
-        --partition small &
+        --partition large &
 )
-
-# Extract the input files to the local disk and cd there
-hq submit --stdout=none --stderr=none --cpus=all ./hyperqueue/localdisk/task/extract.sh &
-hq job wait all
 
 # Submit each Open Babel conversion as a separate HyperQueue job
 FILES=$(tar -tf ./data/smiles.tar.gz | grep "\.smi")
-for FILE in $FILES ; do
-    hq submit --stdout=none --stderr=none --cpus=1 ./hyperqueue/localdisk/task/gen3d.sh "$FILE"
-done
-hq job wait all
-
-# Compress the output .sdf files and copy the package back to /scratch
-hq submit --stdout=none --stderr=none --cpus=all ./hyperqueue/localdisk/task/archive.sh "$SLURM_SUBMIT_DIR" &
+#for FILE in $FILES ; do
+#    hq submit --stdout=none --stderr=none --cpus=1 ./hyperqueue/localdisk/task/gen3d.sh "$FILE"
+#done
+hq submit --stdout=none --stderr=none --cpus=1 --each-line <(echo "$FILES") ./task/gen3d.sh
 hq job wait all
 
 # Shut down the HyperQueue workers and server
