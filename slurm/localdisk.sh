@@ -14,3 +14,10 @@ srun -m arbitrary -w "$SLURM_JOB_NODELIST" bash -c "hostname > \$LOCAL_SCRATCH/h
 # Run one slurm task on each allocated slurm task.
 # Prints the contents of the file on the local disk.
 srun bash -c "cat \$LOCAL_SCRATCH/hostname"
+
+# Alternative, we could loop over `scontrol show hostnames "$SLURM_JOB_NODELIST"`
+echo "Run job steps on specific nodes."
+for NODE in $(scontrol show hostnames "$SLURM_JOB_NODELIST"); do
+    srun -m arbitrary -w "$NODE" hostname &
+done
+wait
