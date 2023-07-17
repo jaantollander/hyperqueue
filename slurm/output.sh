@@ -1,5 +1,4 @@
 #!/bin/bash
-#SBATCH --job-name=example
 #SBATCH --output=%j.out
 #SBATCH --error=%j.err
 #SBATCH --partition=test
